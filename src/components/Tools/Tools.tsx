@@ -9,7 +9,7 @@ type ToolsProps = {
 
 const Tools: React.FC<ToolsProps> = ({ parseResult }) => {
   const exportOptimized = React.useCallback(() => {
-    const buffer = Build3do.optimized(parseResult);
+    const buffer = Build3do.optimized(parseResult); // TODO handle / display error!
     Utils.saveFile(buffer, parseResult.fileMap.file.name, 'application/x-binary');
   }, []);
 

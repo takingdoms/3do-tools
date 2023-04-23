@@ -137,6 +137,12 @@ function parsePrimitives(view: DataView, offset: number, count: number, areas: F
       vertexIndices.push(nextVertexIndex);
     }
 
+    areas.push({
+      identifier: 'vindices',
+      offset: primitiveStruct['OffsetToVertexIndexArray'],
+      length: primitiveStruct['NumberOfVertexIndexes'] * 2, // * 2 because uint16
+    });
+
     result.push({
       source: primitiveStruct,
       vertexIndices,

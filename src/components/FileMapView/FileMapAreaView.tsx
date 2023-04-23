@@ -17,6 +17,8 @@ const FileMapAreaView: React.FC<FileMapAreaViewProps> = ({ area }) => {
       ? 'bg-purple-700 border-purple-500'
     : identifier === 'vertexes'
       ? 'bg-yellow-700 border-yellow-500'
+    : identifier === 'vindices'
+      ? 'bg-rose-700 border-rose-500'
     : identifier === 'primitive'
       ? 'bg-teal-700 border-teal-500'
     : identifier === 'unknown-gap'

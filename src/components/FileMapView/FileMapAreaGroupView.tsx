@@ -25,6 +25,8 @@ const FileMapAreaGroupView: React.FC<FileMapAreaGroupViewProps> = ({ group }) =>
       ? 'bg-purple-800 border-purple-600'
     : identifier === 'vertexes'
       ? 'bg-yellow-800 border-yellow-600'
+    : identifier === 'vindices'
+      ? 'bg-rose-800 border-rose-600'
     : identifier === 'primitive'
       ? 'bg-teal-800 border-teal-600'
     : identifier === 'unknown-gap'
