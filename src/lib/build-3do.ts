@@ -116,20 +116,31 @@ function writeObject(
 
 function writeName(name: string, map: BuildMap): number {
   const offsetStart = map.currentOffset;
-  const textEncoder = new TextEncoder();
-  const buffer = textEncoder.encode(name);
-  const actualBuffer = new Uint8Array(buffer.length + 1); // null terminated
 
-  actualBuffer[actualBuffer.length - 1] = 0;
-  actualBuffer.set(buffer, 0);
+  const charCodes: number[] = [];
+
+  for (let i = 0; i < name.length; i++) {
+    const code = name.charCodeAt(i);
+
+    if (code > 127) { // ascii only supportes 0 ~ 128
+      throw new Error(`String "${name}" contains an unsupported character code: "${code}" at pos: "${i}"`);
+    }
+
+    charCodes.push(code);
+  }
+
+  const buffer = new Uint8Array(charCodes.length + 1); // null terminated
+
+  buffer.set(charCodes, 0);
+  buffer[buffer.length - 1] = 0;
 
   map.areas.push({
-    buffer: actualBuffer,
+    buffer,
     offset: offsetStart,
     name: 'name',
   });
 
-  map.currentOffset += actualBuffer.length;
+  map.currentOffset += buffer.length;
 
   return offsetStart;
 }
