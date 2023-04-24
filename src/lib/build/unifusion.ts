@@ -8,7 +8,8 @@ interface UnifusionContext {
 
 type OffsetXYZ = [number, number, number];
 
-const MAX_UINT32 = 4_294_967_295;
+const MIN_INT32 = -2_147_483_648;
+const MAX_INT32 = 2_147_483_647;
 
 function unifuseObjects(rootObject: DeepReadonly<PointerlessObject3do>): Object3do {
   const ctx: UnifusionContext = {
@@ -58,9 +59,9 @@ function appendObject(
     const oldVertex = object3do.vertices[i];
 
     const newXYZ = {
-      x: addIntsAndValidateUInt32(oldVertex.x, offsetsFromParent[0]),
-      y: addIntsAndValidateUInt32(oldVertex.y, offsetsFromParent[1]),
-      z: addIntsAndValidateUInt32(oldVertex.z, offsetsFromParent[2]),
+      x: addIntsAndValidateInt32(oldVertex.x, offsetsFromParent[0]),
+      y: addIntsAndValidateInt32(oldVertex.y, offsetsFromParent[1]),
+      z: addIntsAndValidateInt32(oldVertex.z, offsetsFromParent[2]),
     };
 
     const newVertex: Vertex3do = {
@@ -113,13 +114,19 @@ function appendObject(
   }
 }
 
-function addIntsAndValidateUInt32(num: number, add: number): number {
+function addIntsAndValidateInt32(num: number, add: number): number {
   const result = num + add;
 
-  if (result > MAX_UINT32) {
+  if (result < MIN_INT32) {
     throw new Error(`It won't fit in :(. When applying the relative offset "${add}" to the`
-      + ` integer "${num}" its value became greater than the maximum value allowed for an`
-      + ` unsigned 32 bit integer, which is "${MAX_UINT32}".`);
+      + ` integer "${num}" its value became lesser than the minimum value allowed for a`
+      + ` signed 32 bit integer, which is "${MIN_INT32}".`);
+  }
+
+  if (result > MAX_INT32) {
+    throw new Error(`It won't fit in :(. When applying the relative offset "${add}" to the`
+      + ` integer "${num}" its value became greater than the maximum value allowed for a`
+      + ` signed 32 bit integer, which is "${MAX_INT32}".`);
   }
 
   return result;

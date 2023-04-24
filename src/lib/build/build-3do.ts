@@ -144,14 +144,14 @@ function writeName(name: string, ctx: BuildContext): number {
   for (let i = 0; i < name.length; i++) {
     const code = name.charCodeAt(i);
 
-    if (code > 127) { // ascii only supportes 0 ~ 128
+    if (code > 127) { // ascii only supports 0 ~ 127
       throw new Error(`String "${name}" contains an unsupported character code: "${code}" at pos: "${i}"`);
     }
 
     charCodes.push(code);
   }
 
-  const buffer = new Uint8Array(charCodes.length + 1); // null terminated
+  const buffer = new Int8Array(charCodes.length + 1); // null terminated
 
   buffer.set(charCodes, 0);
   buffer[buffer.length - 1] = 0;
@@ -216,8 +216,8 @@ function writePrimitives(primitives: PointerlessPrimitive3do[], ctx: BuildContex
     vIndicesSubOffsets.push(ctx.currentOffset);
 
     for (const vIndex of nextPrimitive.vertexIndices) {
-      vIndicesView.setUint16(vIndicesCursor, vIndex, true);
-      vIndicesCursor += 2; // 2 because uint16 = 2 bytes
+      vIndicesView.setInt16(vIndicesCursor, vIndex, true);
+      vIndicesCursor += 2; // 2 because Int16 = 2 bytes
     }
 
     ctx.currentOffset += nextPrimitive.vertexIndices.length * 2; // * 2 because each vertex is a u16

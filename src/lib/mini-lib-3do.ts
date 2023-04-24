@@ -132,15 +132,15 @@ function parsePrimitives(view: DataView, offset: number, count: number, areas: F
     const vertexIndices: number[] = [];
 
     for (let v = 0; v < primitiveStruct['NumberOfVertexIndexes']; v++) {
-      // v * 2 because each vertex index reads 2 bytes (aka Uint16)
-      const nextVertexIndex = view.getUint16(primitiveStruct['OffsetToVertexIndexArray'] + (v * 2), true);
+      // v * 2 because each vertex index reads 2 bytes (aka Int16)
+      const nextVertexIndex = view.getInt16(primitiveStruct['OffsetToVertexIndexArray'] + (v * 2), true);
       vertexIndices.push(nextVertexIndex);
     }
 
     areas.push({
       identifier: 'vindices',
       offset: primitiveStruct['OffsetToVertexIndexArray'],
-      length: primitiveStruct['NumberOfVertexIndexes'] * 2, // * 2 because uint16
+      length: primitiveStruct['NumberOfVertexIndexes'] * 2, // * 2 because Int16
       _indices: vertexIndices,
     });
 
@@ -170,12 +170,12 @@ function parseName(
 
   for (let i = 0; i < NAME_LIMIT; i++) {
     size++;
-    const nextByte = view.getUint8(offset + i);
+    const nextByte = view.getInt8(offset + i);
     if (nextByte === 0)
       break;
   }
 
-  const slice = new Uint8Array(view.buffer, offset, size - 1);
+  const slice = new Int8Array(view.buffer, offset, size - 1);
   const name = textDecoder.decode(slice);
 
   areas.push({

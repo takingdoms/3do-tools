@@ -1,40 +1,40 @@
 import { ByteUtils } from "./byte-utils";
 
 export const OBJECT_STRUCT = [
-  ['VersionSignature',        'U32'],
-  ['NumberOfVertexes',        'U32'],
-  ['NumberOfPrimitives',      'U32'],
-  ['SelectionPrimitiveOffset','U32'],
-  ['XFromParent',             'U32'],
-  ['YFromParent',             'U32'],
-  ['ZFromParent',             'U32'],
-  ['OffsetToObjectName',      'U32'],
-  ['Always_0',                'U32'],
-  ['OffsetToVertexArray',     'U32'],
-  ['OffsetToPrimitiveArray',  'U32'],
-  ['OffsetToSiblingObject',   'U32'],
-  ['OffsetToChildObject',     'U32'],
+  ['VersionSignature',        'I32'],
+  ['NumberOfVertexes',        'I32'],
+  ['NumberOfPrimitives',      'I32'],
+  ['SelectionPrimitiveOffset','I32'],
+  ['XFromParent',             'I32'],
+  ['YFromParent',             'I32'],
+  ['ZFromParent',             'I32'],
+  ['OffsetToObjectName',      'I32'],
+  ['Always_0',                'I32'],
+  ['OffsetToVertexArray',     'I32'],
+  ['OffsetToPrimitiveArray',  'I32'],
+  ['OffsetToSiblingObject',   'I32'],
+  ['OffsetToChildObject',     'I32'],
 ] as const;
 
 export const OBJECT_STRUCT_SIZE = ByteUtils.calcStructSize(OBJECT_STRUCT);
 
 export const VERTEX_STRUCT = [
-  ['x', 'U32'],
-  ['y', 'U32'],
-  ['z', 'U32'],
+  ['x', 'I32'],
+  ['y', 'I32'],
+  ['z', 'I32'],
 ] as const;
 
 export const VERTEX_STRUCT_SIZE = ByteUtils.calcStructSize(VERTEX_STRUCT);
 
 export const PRIMITIVE_STRUCT = [
-  ['ColorIndex',                'U32'],
-  ['NumberOfVertexIndexes',     'U32'],
-  ['Always_0',                  'U32'],
-  ['OffsetToVertexIndexArray',  'U32'],
-  ['OffsetToTextureName',       'U32'],
-  ['Unknown_1',                 'U32'],
-  ['Unknown_2',                 'U32'],
-  ['IsColored',                 'U32'],
+  ['ColorIndex',                'I32'],
+  ['NumberOfVertexIndexes',     'I32'],
+  ['Always_0',                  'I32'],
+  ['OffsetToVertexIndexArray',  'I32'],
+  ['OffsetToTextureName',       'I32'],
+  ['Unknown_1',                 'I32'],
+  ['Unknown_2',                 'I32'],
+  ['IsColored',                 'I32'],
 ] as const;
 
 export const PRIMITIVE_STRUCT_SIZE = ByteUtils.calcStructSize(PRIMITIVE_STRUCT);
