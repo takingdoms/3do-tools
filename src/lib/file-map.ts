@@ -46,8 +46,27 @@ export function normalizeFileMap(fileMap: FileMap): NormalizedFileMap {
     return a1.offset - a2.offset;
   });
 
-  for (let i = 0; i < sortedAreas.length; i++) {
-    const currArea = sortedAreas[i];
+  const deduplicatedAreas: FileMapArea[] = [];
+  sortedAreas.forEach((next) => {
+    if (deduplicatedAreas.length === 0) {
+      deduplicatedAreas.push(next);
+      return;
+    }
+
+    const last = deduplicatedAreas[deduplicatedAreas.length - 1];
+
+    if (last.identifier === next.identifier
+      && last.offset === next.offset
+      && last.length === next.length
+    ) {
+      return;
+    }
+
+    deduplicatedAreas.push(next);
+  });
+
+  for (let i = 0; i < deduplicatedAreas.length; i++) {
+    const currArea = deduplicatedAreas[i];
     const lastAreaGroup = areaGroups.length > 0 ? areaGroups[areaGroups.length - 1] : undefined;
 
     if (lastAreaGroup !== undefined && lastAreaGroup.identifier === currArea.identifier) {
