@@ -50,7 +50,7 @@ function build(rootObject3do: PointerlessObject3do, buildMode: BuildMode): Array
     const end = start + length;
     lastEnd = end;
 
-    console.log(`${start} .. ${end} (${length}) : ${area.name}`);
+    // console.log(`${start} .. ${end} (${length}) : ${area.name}`);
   }
 
   const lastArea = ctx.areas[ctx.areas.length - 1];
@@ -176,7 +176,7 @@ function writeVertices(vertices: Vertex3do[], ctx: BuildContext): number {
     const nextVertex = vertices[i];
     const nextOffset = 0 + (i * VERTEX_STRUCT_SIZE);
 
-    console.log(nextVertex.source);
+    // console.log(nextVertex.source);
     ByteUtils.writeStruct(nextVertex.source, view, nextOffset, VERTEX_STRUCT);
   }
 
