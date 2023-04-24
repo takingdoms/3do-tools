@@ -7,6 +7,7 @@ import { OBJECT_STRUCT, OBJECT_STRUCT_SIZE, ObjectStructData, PRIMITIVE_STRUCT, 
 interface BuildMap {
   currentOffset: number;
   areas: BuildMapArea[];
+  textureNameMap: Record<string, number>; // key: textureName; value: offset;
 }
 
 interface BuildMapArea {
@@ -21,11 +22,12 @@ function optimized(parseResult: ParseResult): ArrayBuffer {
   const map: BuildMap = {
     currentOffset: 0,
     areas: [],
+    textureNameMap: {},
   };
 
   console.log('WRITING OPTIMIZED 3DO!');
 
-  writeObject(rootObject3do, map, 0, 0);
+  writeRootObject(rootObject3do, map);
 
   if (map.areas.length === 0) {
     throw new Error('Empty 3do');
@@ -59,24 +61,43 @@ function optimized(parseResult: ParseResult): ArrayBuffer {
   return finalBuffer.buffer;
 }
 
+function writeRootObject(object: Object3do, map: BuildMap): void {
+  map.currentOffset += OBJECT_STRUCT_SIZE;
+
+  writeTextureMap(object, map);
+
+  writeObject(object, map, 0, 0);
+}
+
+function writeTextureMap(object: Object3do, map: BuildMap): void {
+  for (const primitive of object.primitives) {
+    const { textureName } = primitive;
+
+    if (!textureName) { // empty name
+      continue;
+    }
+
+    if (textureName in map.textureNameMap) { // already exists
+      continue;
+    }
+
+    map.textureNameMap[textureName] = writeName(textureName, map);
+  }
+
+  for (const child of object.children) {
+    writeTextureMap(child, map);
+  }
+}
+
 function writeObject(
   object: Object3do,
   map: BuildMap,
   overrideStructOffset: number, // overrides map.currentOffset for the offset of the buffer area
   siblingOffset: number,
-): number {
-  const objectOffset = map.currentOffset; // if root, is the same as overrideStructOffset aka 0
-
-  if (overrideStructOffset === 0) {
-    // if root, make up for the space of the object struct.
-    // if not root, this isn't needed because the parent already made up for this space down below:
-    // `map.currentOffset += OBJECT_STRUCT_SIZE * object.children.length;`
-    map.currentOffset += OBJECT_STRUCT_SIZE;
-  }
-
-  const nameOffset = writeName(object.name, map);
+): void {
   const verticesOffset = writeVertices(object.vertices, map);
   const primitivesOffset = writePrimitives(object.primitives, map);
+  const nameOffset = writeName(object.name, map);
 
   const childrenOffset = map.currentOffset;
   map.currentOffset += OBJECT_STRUCT_SIZE * object.children.length;
@@ -110,8 +131,6 @@ function writeObject(
     buffer: objectBuffer,
     name: 'object',
   });
-
-  return objectOffset;
 }
 
 function writeName(name: string, map: BuildMap): number {
@@ -180,15 +199,6 @@ function writePrimitives(primitives: Primitive3do[], map: BuildMap): number {
     map.currentOffset += PRIMITIVE_STRUCT_SIZE;
   }
 
-  const nameOffsets: number[] = [];
-
-  for (let i = 0; i < primitives.length; i++) {
-    const nextPrimitive = primitives[i];
-
-    nameOffsets.push(map.currentOffset);
-    writeName(nextPrimitive.textureName, map);
-  }
-
   const vIndicesOffset = map.currentOffset;
   const vIndicesBuffer = new ArrayBuffer(vIndicesBufferSize);
   const vIndicesView = new DataView(vIndicesBuffer);
@@ -222,9 +232,17 @@ function writePrimitives(primitives: Primitive3do[], map: BuildMap): number {
     const nextPrimitive = primitives[i];
     const nextOffset = i * PRIMITIVE_STRUCT_SIZE;
 
+    const textureNameOffset = nextPrimitive.textureName
+      ? map.textureNameMap[nextPrimitive.textureName]
+      : 0;
+
+    if (textureNameOffset === undefined) {
+      throw new Error(`Something went VERY wrong. Texture name not found: ${nextPrimitive.textureName}`);
+    }
+
     const nextData: PrimitiveStructData = {
       ...nextPrimitive.source,
-      OffsetToTextureName: nameOffsets[i],
+      OffsetToTextureName: textureNameOffset,
       OffsetToVertexIndexArray: vIndicesSubOffsets[i],
     };
 
