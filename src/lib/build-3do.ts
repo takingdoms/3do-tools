@@ -4,13 +4,13 @@ import { Primitive3do } from "./object-3do";
 import { Object3do, Vertex3do } from "./object-3do";
 import { OBJECT_STRUCT, OBJECT_STRUCT_SIZE, ObjectStructData, PRIMITIVE_STRUCT, PRIMITIVE_STRUCT_SIZE, PrimitiveStructData, VERTEX_STRUCT, VERTEX_STRUCT_SIZE } from "./structs";
 
-interface BuildMap {
+interface BuildContext {
   currentOffset: number;
-  areas: BuildMapArea[];
+  areas: BuildArea[];
   textureNameMap: Record<string, number>; // key: textureName; value: offset;
 }
 
-interface BuildMapArea {
+interface BuildArea {
   offset: number;
   buffer: ArrayBuffer;
   name: string;
@@ -19,7 +19,7 @@ interface BuildMapArea {
 function optimized(parseResult: ParseResult): ArrayBuffer {
   const { rootObject3do } = parseResult;
 
-  const map: BuildMap = {
+  const ctx: BuildContext = {
     currentOffset: 0,
     areas: [],
     textureNameMap: {},
@@ -27,16 +27,16 @@ function optimized(parseResult: ParseResult): ArrayBuffer {
 
   console.log('WRITING OPTIMIZED 3DO!');
 
-  writeRootObject(rootObject3do, map);
+  writeRootObject(rootObject3do, ctx);
 
-  if (map.areas.length === 0) {
+  if (ctx.areas.length === 0) {
     throw new Error('Empty 3do');
   }
 
-  map.areas.sort((a1, a2) => a1.offset - a2.offset);
+  ctx.areas.sort((a1, a2) => a1.offset - a2.offset);
 
   let lastEnd = 0;
-  for (const area of map.areas) {
+  for (const area of ctx.areas) {
     const start = area.offset;
 
     if (start !== lastEnd) {
@@ -50,26 +50,26 @@ function optimized(parseResult: ParseResult): ArrayBuffer {
     console.log(`${start} .. ${end} (${length}) : ${area.name}`);
   }
 
-  const lastArea = map.areas[map.areas.length - 1];
+  const lastArea = ctx.areas[ctx.areas.length - 1];
   const totalLength = lastArea.offset + lastArea.buffer.byteLength;
   const finalBuffer = new Uint8Array(new ArrayBuffer(totalLength));
 
-  for (const area of map.areas) {
+  for (const area of ctx.areas) {
     finalBuffer.set(new Uint8Array(area.buffer), area.offset);
   }
 
   return finalBuffer.buffer;
 }
 
-function writeRootObject(object: Object3do, map: BuildMap): void {
-  map.currentOffset += OBJECT_STRUCT_SIZE;
+function writeRootObject(object: Object3do, ctx: BuildContext): void {
+  ctx.currentOffset += OBJECT_STRUCT_SIZE;
 
-  writeTextureMap(object, map);
+  writeTextureMap(object, ctx);
 
-  writeObject(object, map, 0, 0);
+  writeObject(object, ctx, 0, 0);
 }
 
-function writeTextureMap(object: Object3do, map: BuildMap): void {
+function writeTextureMap(object: Object3do, ctx: BuildContext): void {
   for (const primitive of object.primitives) {
     const { textureName } = primitive;
 
@@ -77,30 +77,30 @@ function writeTextureMap(object: Object3do, map: BuildMap): void {
       continue;
     }
 
-    if (textureName in map.textureNameMap) { // already exists
+    if (textureName in ctx.textureNameMap) { // already exists
       continue;
     }
 
-    map.textureNameMap[textureName] = writeName(textureName, map);
+    ctx.textureNameMap[textureName] = writeName(textureName, ctx);
   }
 
   for (const child of object.children) {
-    writeTextureMap(child, map);
+    writeTextureMap(child, ctx);
   }
 }
 
 function writeObject(
   object: Object3do,
-  map: BuildMap,
+  ctx: BuildContext,
   overrideStructOffset: number, // overrides map.currentOffset for the offset of the buffer area
   siblingOffset: number,
 ): void {
-  const verticesOffset = writeVertices(object.vertices, map);
-  const primitivesOffset = writePrimitives(object.primitives, map);
-  const nameOffset = writeName(object.name, map);
+  const verticesOffset = writeVertices(object.vertices, ctx);
+  const primitivesOffset = writePrimitives(object.primitives, ctx);
+  const nameOffset = writeName(object.name, ctx);
 
-  const childrenOffset = map.currentOffset;
-  map.currentOffset += OBJECT_STRUCT_SIZE * object.children.length;
+  const childrenOffset = ctx.currentOffset;
+  ctx.currentOffset += OBJECT_STRUCT_SIZE * object.children.length;
 
   for (let i = 0; i < object.children.length; i++) {
     const nextChild = object.children[i];
@@ -109,7 +109,7 @@ function writeObject(
       ? childrenOffset + ((i + 1) * OBJECT_STRUCT_SIZE)
       : 0; // 0 = no sibling left
 
-    writeObject(nextChild, map, nextChildOffsetOverride, childSiblingOffset);
+    writeObject(nextChild, ctx, nextChildOffsetOverride, childSiblingOffset);
   }
 
   const objectBuffer = new ArrayBuffer(OBJECT_STRUCT_SIZE);
@@ -126,15 +126,15 @@ function writeObject(
 
   ByteUtils.writeStruct(objectData, objectView, 0, OBJECT_STRUCT);
 
-  map.areas.push({
+  ctx.areas.push({
     offset: overrideStructOffset,
     buffer: objectBuffer,
     name: 'object',
   });
 }
 
-function writeName(name: string, map: BuildMap): number {
-  const offsetStart = map.currentOffset;
+function writeName(name: string, ctx: BuildContext): number {
+  const offsetStart = ctx.currentOffset;
 
   const charCodes: number[] = [];
 
@@ -153,19 +153,19 @@ function writeName(name: string, map: BuildMap): number {
   buffer.set(charCodes, 0);
   buffer[buffer.length - 1] = 0;
 
-  map.areas.push({
+  ctx.areas.push({
     buffer,
     offset: offsetStart,
     name: 'name',
   });
 
-  map.currentOffset += buffer.length;
+  ctx.currentOffset += buffer.length;
 
   return offsetStart;
 }
 
-function writeVertices(vertices: Vertex3do[], map: BuildMap): number {
-  const offsetStart = map.currentOffset;
+function writeVertices(vertices: Vertex3do[], ctx: BuildContext): number {
+  const offsetStart = ctx.currentOffset;
   const buffer = new ArrayBuffer(VERTEX_STRUCT_SIZE * vertices.length);
   const view = new DataView(buffer);
 
@@ -176,19 +176,19 @@ function writeVertices(vertices: Vertex3do[], map: BuildMap): number {
     ByteUtils.writeStruct(nextVertex.source, view, nextOffset, VERTEX_STRUCT);
   }
 
-  map.areas.push({
+  ctx.areas.push({
     buffer,
     offset: offsetStart,
     name: 'vertices',
   });
 
-  map.currentOffset += buffer.byteLength;
+  ctx.currentOffset += buffer.byteLength;
 
   return offsetStart;
 }
 
-function writePrimitives(primitives: Primitive3do[], map: BuildMap): number {
-  const primitivesOffset = map.currentOffset;
+function writePrimitives(primitives: Primitive3do[], ctx: BuildContext): number {
+  const primitivesOffset = ctx.currentOffset;
   let vIndicesBufferSize = 0;
 
   for (let i = 0; i < primitives.length; i++) {
@@ -196,10 +196,10 @@ function writePrimitives(primitives: Primitive3do[], map: BuildMap): number {
     vIndicesBufferSize += nextPrimitive.vertexIndices.length * 2; // * 2 because each vertex is a u16
 
     // empty space here reserved for when the primitives are actually written
-    map.currentOffset += PRIMITIVE_STRUCT_SIZE;
+    ctx.currentOffset += PRIMITIVE_STRUCT_SIZE;
   }
 
-  const vIndicesOffset = map.currentOffset;
+  const vIndicesOffset = ctx.currentOffset;
   const vIndicesBuffer = new ArrayBuffer(vIndicesBufferSize);
   const vIndicesView = new DataView(vIndicesBuffer);
 
@@ -209,17 +209,17 @@ function writePrimitives(primitives: Primitive3do[], map: BuildMap): number {
   for (let i = 0; i < primitives.length; i++) {
     const nextPrimitive = primitives[i];
 
-    vIndicesSubOffsets.push(map.currentOffset);
+    vIndicesSubOffsets.push(ctx.currentOffset);
 
     for (const vIndex of nextPrimitive.vertexIndices) {
       vIndicesView.setUint16(vIndicesCursor, vIndex, true);
       vIndicesCursor += 2; // 2 because uint16 = 2 bytes
     }
 
-    map.currentOffset += nextPrimitive.vertexIndices.length * 2; // * 2 because each vertex is a u16
+    ctx.currentOffset += nextPrimitive.vertexIndices.length * 2; // * 2 because each vertex is a u16
   }
 
-  map.areas.push({
+  ctx.areas.push({
     buffer: vIndicesBuffer,
     offset: vIndicesOffset,
     name: 'vIndices',
@@ -233,7 +233,7 @@ function writePrimitives(primitives: Primitive3do[], map: BuildMap): number {
     const nextOffset = i * PRIMITIVE_STRUCT_SIZE;
 
     const textureNameOffset = nextPrimitive.textureName
-      ? map.textureNameMap[nextPrimitive.textureName]
+      ? ctx.textureNameMap[nextPrimitive.textureName]
       : 0;
 
     if (textureNameOffset === undefined) {
@@ -249,7 +249,7 @@ function writePrimitives(primitives: Primitive3do[], map: BuildMap): number {
     ByteUtils.writeStruct(nextData, primitivesView, nextOffset, PRIMITIVE_STRUCT);
   }
 
-  map.areas.push({
+  ctx.areas.push({
     buffer: primitivesBuffer,
     offset: primitivesOffset,
     name: 'primitives',
