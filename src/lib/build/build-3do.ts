@@ -1,10 +1,14 @@
-import { ByteUtils } from "./byte-utils";
-import { ParseResult } from "./mini-lib-3do";
-import { Primitive3do } from "./object-3do";
-import { Object3do, Vertex3do } from "./object-3do";
-import { OBJECT_STRUCT, OBJECT_STRUCT_SIZE, ObjectStructData, PRIMITIVE_STRUCT, PRIMITIVE_STRUCT_SIZE, PrimitiveStructData, VERTEX_STRUCT, VERTEX_STRUCT_SIZE } from "./structs";
+import { ByteUtils } from "../byte-utils";
+import { ParseResult } from "../mini-lib-3do";
+import { Primitive3do } from "../object-3do";
+import { Object3do, Vertex3do } from "../object-3do";
+import { OBJECT_STRUCT, OBJECT_STRUCT_SIZE, ObjectStructData, PRIMITIVE_STRUCT, PRIMITIVE_STRUCT_SIZE, PrimitiveStructData, VERTEX_STRUCT, VERTEX_STRUCT_SIZE } from "../structs";
+import { Unifusion } from "./unifusion";
+
+export type BuildMode = 'normal' | 'unifusion';
 
 interface BuildContext {
+  mode: BuildMode;
   currentOffset: number;
   areas: BuildArea[];
   textureNameMap: Record<string, number>; // key: textureName; value: offset;
@@ -16,16 +20,17 @@ interface BuildArea {
   name: string;
 }
 
-function optimized(parseResult: ParseResult): ArrayBuffer {
-  const { rootObject3do } = parseResult;
-
+function build(rootObject3do: Object3do, buildMode: BuildMode): ArrayBuffer {
   const ctx: BuildContext = {
+    mode: buildMode,
     currentOffset: 0,
     areas: [],
     textureNameMap: {},
   };
 
-  console.log('WRITING OPTIMIZED 3DO!');
+  if (buildMode === 'unifusion') {
+    rootObject3do = Unifusion.unifuseObjects(rootObject3do);
+  }
 
   writeRootObject(rootObject3do, ctx);
 
@@ -259,5 +264,5 @@ function writePrimitives(primitives: Primitive3do[], ctx: BuildContext): number 
 }
 
 export const Build3do = {
-  optimized,
+  build,
 };
