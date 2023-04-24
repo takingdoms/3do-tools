@@ -17,9 +17,9 @@ type BaseFileMapAreaWithStruct<TId extends string, TStruct> = BaseFileMapArea<TI
 
 export type ObjectArea = BaseFileMapAreaWithStruct<'object', ObjectStructData>;
 export type VertexArea = BaseFileMapAreaWithStruct<'vertexes', VertexStructData>;
-export type VindicesArea = BaseFileMapArea<'vindices'>;
+export type VindicesArea = BaseFileMapArea<'vindices'> & { _indices: number[] };
 export type PrimitiveArea = BaseFileMapAreaWithStruct<'primitive', PrimitiveStructData>;
-export type NameArea = BaseFileMapArea<'object-name' | 'texture-name'>;
+export type NameArea = BaseFileMapArea<'object-name' | 'texture-name'> & { _name: string };
 export type UnknownGapArea = BaseFileMapArea<'unknown-gap'>;
 
 export type FileMapArea = ObjectArea | VertexArea | VindicesArea | PrimitiveArea | NameArea | UnknownGapArea;

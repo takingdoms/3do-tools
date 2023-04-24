@@ -141,6 +141,7 @@ function parsePrimitives(view: DataView, offset: number, count: number, areas: F
       identifier: 'vindices',
       offset: primitiveStruct['OffsetToVertexIndexArray'],
       length: primitiveStruct['NumberOfVertexIndexes'] * 2, // * 2 because uint16
+      _indices: vertexIndices,
     });
 
     result.push({
@@ -174,14 +175,17 @@ function parseName(
       break;
   }
 
+  const slice = new Uint8Array(view.buffer, offset, size - 1);
+  const name = textDecoder.decode(slice);
+
   areas.push({
     identifier,
     offset: offset,
     length: size,
+    _name: name,
   });
 
-  const slice = new Uint8Array(view.buffer, offset, size - 1);
-  return textDecoder.decode(slice);
+  return name;
 }
 
 export const MiniLib3do = {
