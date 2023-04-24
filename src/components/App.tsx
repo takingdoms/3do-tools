@@ -54,7 +54,7 @@ function App() {
   return (
     <div className="container mx-auto p-4">
       <div className="text-center text-2xl mb-2">
-        {result.fileMap.file.name} ({result.fileMap.file.size})
+        {result.fileMap.file.name} ({result.fileMap.file.size} bytes)
       </div>
 
       <div className="flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
