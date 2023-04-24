@@ -3,8 +3,8 @@ type Endianness = 'LE' | 'BE';
 
 type ExtraType = { 'CHAR': number };
 
-const INTEGER_TYPES: IntegerType[] = ['U8', 'I8', 'U16', 'I16', 'U32', 'I32'];
-const ENDIANNESSES: Endianness[] = ['LE', 'BE'];
+// const INTEGER_TYPES: IntegerType[] = ['U8', 'I8', 'U16', 'I16', 'U32', 'I32'];
+// const ENDIANNESSES: Endianness[] = ['LE', 'BE'];
 
 type StructDef<TKeyName extends string = string> = ReadonlyArray<
   readonly [TKeyName, IntegerType]

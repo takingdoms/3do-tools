@@ -1,5 +1,5 @@
 import { ByteUtils } from "../byte-utils";
-import { Object3do, PointerlessObject3do, PointerlessPrimitive3do, Primitive3do, Vertex3do } from "../object-3do";
+import { PointerlessObject3do, PointerlessPrimitive3do, Vertex3do } from "../object-3do";
 import { OBJECT_STRUCT, OBJECT_STRUCT_SIZE, ObjectStructData, PRIMITIVE_STRUCT, PRIMITIVE_STRUCT_SIZE, PrimitiveStructData, VERTEX_STRUCT, VERTEX_STRUCT_SIZE } from "../structs";
 import { Unifusion } from "./unifusion";
 
