@@ -149,22 +149,35 @@ function writeInteger(
   endianness: Endianness = 'LE',
 ): void {
   if (type === 'I8') {
+    validateWrite(integer, type, -128, 127);
     data.setInt8(pos, integer);
   }
   else if (type === 'U8') {
+    validateWrite(integer, type, 0, 255);
     data.setUint8(pos, integer);
   }
   else if (type === 'I16') {
+    validateWrite(integer, type, -32768, 32767);
     data.setInt16(pos, integer, endianness === 'LE');
   }
   else if (type === 'U16') {
+    validateWrite(integer, type, 0, 65535);
     data.setUint16(pos, integer, endianness === 'LE');
   }
   else if (type === 'U32') {
+    validateWrite(integer, type, 0, 4_294_967_295);
     data.setUint32(pos, integer, endianness === 'LE');
   }
   else { // I32
+    validateWrite(integer, type, -2_147_483_648, 2_147_483_647);
     data.setInt32(pos, integer, endianness === 'LE');
+  }
+}
+
+function validateWrite(integer: number, type: IntegerType, min: number, max: number) {
+  if (integer < min || integer > max) {
+    throw new Error(`Error! The integer "${integer}" doesn't fit into a "${type}", which should be`
+      + ` in the range of ${min} ~ ${max} (inclusive).`);
   }
 }
 

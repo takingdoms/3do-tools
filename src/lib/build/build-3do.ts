@@ -1,7 +1,5 @@
 import { ByteUtils } from "../byte-utils";
-import { ParseResult } from "../mini-lib-3do";
-import { Primitive3do } from "../object-3do";
-import { Object3do, Vertex3do } from "../object-3do";
+import { Object3do, Primitive3do, Vertex3do } from "../object-3do";
 import { OBJECT_STRUCT, OBJECT_STRUCT_SIZE, ObjectStructData, PRIMITIVE_STRUCT, PRIMITIVE_STRUCT_SIZE, PrimitiveStructData, VERTEX_STRUCT, VERTEX_STRUCT_SIZE } from "../structs";
 import { Unifusion } from "./unifusion";
 
@@ -178,6 +176,7 @@ function writeVertices(vertices: Vertex3do[], ctx: BuildContext): number {
     const nextVertex = vertices[i];
     const nextOffset = 0 + (i * VERTEX_STRUCT_SIZE);
 
+    console.log(nextVertex.source);
     ByteUtils.writeStruct(nextVertex.source, view, nextOffset, VERTEX_STRUCT);
   }
 

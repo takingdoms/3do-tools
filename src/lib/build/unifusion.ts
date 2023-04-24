@@ -8,6 +8,8 @@ interface UnifusionContext {
 
 type OffsetXYZ = [number, number, number];
 
+const MAX_UINT32 = 4_294_967_295;
+
 function unifuseObjects(rootObject: DeepReadonly<Object3do>): Object3do {
   const ctx: UnifusionContext = {
     vertices: [],
@@ -33,6 +35,7 @@ function unifuseObjects(rootObject: DeepReadonly<Object3do>): Object3do {
     primitives: ctx.primitives,
     source: {
       ...rootObject.source,
+      // -1 because these are SUPPOSED to be ignored by the BUILD process
       OffsetToChildObject: -1,
       OffsetToObjectName: -1,
       OffsetToPrimitiveArray: -1,
@@ -55,9 +58,9 @@ function appendObject(
     const oldVertex = object3do.vertices[i];
 
     const newXYZ = {
-      x: oldVertex.x + offsetsFromParent[0],
-      y: oldVertex.y + offsetsFromParent[1],
-      z: oldVertex.z + offsetsFromParent[2],
+      x: addIntsAndValidateUInt32(oldVertex.x, offsetsFromParent[0]),
+      y: addIntsAndValidateUInt32(oldVertex.y, offsetsFromParent[1]),
+      z: addIntsAndValidateUInt32(oldVertex.z, offsetsFromParent[2]),
     };
 
     const newVertex: Vertex3do = {
@@ -90,6 +93,7 @@ function appendObject(
       vertexIndices: newVertexIndices,
       source: {
         ...oldPrimitive.source,
+        // -1 because these are SUPPOSED to be ignored by the BUILD process
         OffsetToTextureName: -1,
         OffsetToVertexIndexArray: -1,
       },
@@ -107,6 +111,18 @@ function appendObject(
 
     appendObject(child, ctx, offsets);
   }
+}
+
+function addIntsAndValidateUInt32(num: number, add: number): number {
+  const result = num + add;
+
+  if (result > MAX_UINT32) {
+    throw new Error(`It won't fit in :(. When applying the relative offset "${add}" to the`
+      + ` integer "${num}" its value became greater than the maximum value allowed for an`
+      + ` unsigned 32 bit integer, which is "${MAX_UINT32}".`);
+  }
+
+  return result;
 }
 
 export const Unifusion = {
