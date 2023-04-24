@@ -65,7 +65,8 @@ function _SubTool({
     <div className="border border-slate-600 p-2">
       <div>
         <button
-          className="whitespace-nowrap bg-slate-700 hover:bg-slate-600 px-2 py-1 mb-1"
+          className="whitespace-nowrap bg-slate-700 hover:bg-slate-600 border border-slate-600
+            shadow rounded px-2 py-1 mb-2"
           onClick={onClick}
         >{title}</button>
       </div>
