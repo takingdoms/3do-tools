@@ -1,5 +1,5 @@
 import { DeepReadonly } from 'ts-essentials';
-import { Object3do, Primitive3do, Vertex3do } from "../object-3do";
+import { Object3do, PointerlessObject3do, Primitive3do, Vertex3do } from "../object-3do";
 
 interface UnifusionContext {
   vertices: Vertex3do[];
@@ -10,7 +10,7 @@ type OffsetXYZ = [number, number, number];
 
 const MAX_UINT32 = 4_294_967_295;
 
-function unifuseObjects(rootObject: DeepReadonly<Object3do>): Object3do {
+function unifuseObjects(rootObject: DeepReadonly<PointerlessObject3do>): Object3do {
   const ctx: UnifusionContext = {
     vertices: [],
     primitives: [],
@@ -48,7 +48,7 @@ function unifuseObjects(rootObject: DeepReadonly<Object3do>): Object3do {
 }
 
 function appendObject(
-  object3do: DeepReadonly<Object3do>,
+  object3do: DeepReadonly<PointerlessObject3do>,
   ctx: UnifusionContext,
   offsetsFromParent: OffsetXYZ,
 ): void {

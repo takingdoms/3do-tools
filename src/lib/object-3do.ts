@@ -1,3 +1,4 @@
+import { StrictOmit } from "ts-essentials";
 import { ObjectStructData, PrimitiveStructData, VertexStructData } from "./structs";
 
 export type Object3do = {
@@ -22,4 +23,23 @@ export type Primitive3do = {
   source: PrimitiveStructData;
   textureName: string;
   vertexIndices: number[];
+};
+
+// :: Pointerless variants -------------------------------------------------------------------------
+
+export type PointerlessObjectStructData = StrictOmit<ObjectStructData,
+  'OffsetToChildObject' | 'OffsetToObjectName' | 'OffsetToPrimitiveArray' |
+  'OffsetToSiblingObject' | 'OffsetToVertexArray'
+>;
+
+export type PointerlessObject3do = StrictOmit<Object3do, 'source'> & {
+  source: PointerlessObjectStructData;
+};
+
+export type PointerlessPrimitiveStructData = StrictOmit<PrimitiveStructData,
+  'OffsetToTextureName' | 'OffsetToVertexIndexArray'
+>;
+
+export type PointerlessPrimitive3do = StrictOmit<Primitive3do, 'source'> & {
+  source: PointerlessPrimitiveStructData;
 };

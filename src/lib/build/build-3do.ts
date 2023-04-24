@@ -1,5 +1,5 @@
 import { ByteUtils } from "../byte-utils";
-import { Object3do, Primitive3do, Vertex3do } from "../object-3do";
+import { Object3do, PointerlessObject3do, PointerlessPrimitive3do, Primitive3do, Vertex3do } from "../object-3do";
 import { OBJECT_STRUCT, OBJECT_STRUCT_SIZE, ObjectStructData, PRIMITIVE_STRUCT, PRIMITIVE_STRUCT_SIZE, PrimitiveStructData, VERTEX_STRUCT, VERTEX_STRUCT_SIZE } from "../structs";
 import { Unifusion } from "./unifusion";
 
@@ -18,7 +18,7 @@ interface BuildArea {
   name: string;
 }
 
-function build(rootObject3do: Object3do, buildMode: BuildMode): ArrayBuffer {
+function build(rootObject3do: PointerlessObject3do, buildMode: BuildMode): ArrayBuffer {
   const ctx: BuildContext = {
     mode: buildMode,
     currentOffset: 0,
@@ -64,7 +64,7 @@ function build(rootObject3do: Object3do, buildMode: BuildMode): ArrayBuffer {
   return finalBuffer.buffer;
 }
 
-function writeRootObject(object: Object3do, ctx: BuildContext): void {
+function writeRootObject(object: PointerlessObject3do, ctx: BuildContext): void {
   ctx.currentOffset += OBJECT_STRUCT_SIZE;
 
   writeTextureMap(object, ctx);
@@ -72,7 +72,7 @@ function writeRootObject(object: Object3do, ctx: BuildContext): void {
   writeObject(object, ctx, 0, 0);
 }
 
-function writeTextureMap(object: Object3do, ctx: BuildContext): void {
+function writeTextureMap(object: PointerlessObject3do, ctx: BuildContext): void {
   for (const primitive of object.primitives) {
     const { textureName } = primitive;
 
@@ -93,7 +93,7 @@ function writeTextureMap(object: Object3do, ctx: BuildContext): void {
 }
 
 function writeObject(
-  object: Object3do,
+  object: PointerlessObject3do,
   ctx: BuildContext,
   overrideStructOffset: number, // overrides map.currentOffset for the offset of the buffer area
   siblingOffset: number,
@@ -191,7 +191,7 @@ function writeVertices(vertices: Vertex3do[], ctx: BuildContext): number {
   return offsetStart;
 }
 
-function writePrimitives(primitives: Primitive3do[], ctx: BuildContext): number {
+function writePrimitives(primitives: PointerlessPrimitive3do[], ctx: BuildContext): number {
   const primitivesOffset = ctx.currentOffset;
   let vIndicesBufferSize = 0;
 
